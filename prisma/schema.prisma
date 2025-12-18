@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Surah {
+  id             Int      @id @default(autoincrement())
+  number         Int      @unique
+  nameArabic     String
+  nameEnglish    String
+  revelationType String
+  ayahCount      Int
+  ayahs          Ayah[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@map("surahs")
+}
+
+model Ayah {
+  id           Int           @id @default(autoincrement())
+  number       Int
+  textArabic   String        @db.Text
+  juzNumber    Int
+  pageNumber   Int
+  surahId      Int
+  surah        Surah         @relation(fields: [surahId], references: [id])
+  translations Translation[]
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([surahId, number])
+  @@map("ayahs")
+}
+
+model Translation {
+  id        Int      @id @default(autoincrement())
+  text      String   @db.Text
+  language  String
+  author    String
+  ayahId    Int
+  ayah      Ayah     @relation(fields: [ayahId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("translations")
+}
+
+model Juz {
+  id        Int      @id @default(autoincrement())
+  number    Int      @unique
+  startAyah Int
+  endAyah   Int
+
+  @@map("juzs")
+}

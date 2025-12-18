@@ -1,0 +1,13 @@
+#Node Modules
+node_modules/
+
+#Environment variables
+.env
+
+#Logs
+logs/
+*.log
+/src/generated/prisma
+
+#Vs Code setting
+.vscode
