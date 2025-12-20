@@ -1,5 +1,5 @@
-export const httpStatusText = {
-  SUCCESS: "success",
-  FAIL: "fail",
-  ERROR: "error",
-} as const;
+export enum httpStatusText {
+  SUCCESS = "success",
+  FAIL = "fail",
+  ERROR = "error",
+}

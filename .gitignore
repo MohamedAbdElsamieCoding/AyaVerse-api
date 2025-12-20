@@ -1,7 +1,7 @@
-#Node Modules
+# Node Modules
 node_modules/
 
-#Environment variables
+# Environment variables
 .env
 
 #Logs
@@ -9,5 +9,12 @@ logs/
 *.log
 /src/generated/prisma
 
-#Vs Code setting
+# VsCode setting
 .vscode
+
+# Prisma client generated code
+/src/generated/prisma/
+
+# Build output
+/dist
+/build

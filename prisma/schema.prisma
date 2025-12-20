@@ -10,6 +10,24 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  password String
+  role Role @default(USER)
+  name String?
+  bookmark Bookmark[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
 model Surah {
   id             Int      @id @default(autoincrement())
   number         Int      @unique
@@ -33,6 +51,7 @@ model Ayah {
   surahId      Int
   surah        Surah         @relation(fields: [surahId], references: [id])
   translations Translation[]
+  bookmark     Bookmark[]
 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -62,4 +81,18 @@ model Juz {
   endAyah   Int
 
   @@map("juzs")
+}
+
+model Bookmark {
+  id Int @id @default(autoincrement())
+  userId String
+  ayahId Int
+
+  user User @relation(fields: [userId] , references: [id])
+  ayah Ayah @relation(fields: [ayahId] , references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId , ayahId])
+  @@map("bookmarks")
 }
