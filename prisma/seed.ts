@@ -7,6 +7,14 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+function normalizeArabic(text: string): string {
+  return text
+    .replace(/[\u064B-\u0652\u06D6-\u06ED\u0670\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه");
+}
+
 async function main() {
   console.log("🌊 Starting Seeding...");
 
@@ -39,6 +47,7 @@ async function main() {
           create: s.ayahs.map((ayah: any, index: number) => ({
             number: ayah.numberInSurah,
             textArabic: ayah.text,
+            textArabicSimple: normalizeArabic(ayah.text),
             juzNumber: ayah.juz,
             pageNumber: ayah.page,
             translations: {

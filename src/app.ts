@@ -8,6 +8,8 @@ import { requestLogger } from "./middlewares/requestLogger.js";
 import userRouter from "./routes/user.route.js";
 import surahRouter from "./routes/surah.route.js";
 import bookmarkRouter from "./routes/bookmark.route.js";
+import searchRouter from "./routes/search.route.js";
+import juzRouter from "./routes/juz.route.js";
 
 const app = express();
 app.use(express.json());
@@ -23,6 +25,8 @@ app.use(requestLogger);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/surahs", surahRouter);
 app.use("/api/v1/bookmarks", bookmarkRouter);
+app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/juz", juzRouter);
 
 // Error handler middleware
 app.use(globalErrorHandler);

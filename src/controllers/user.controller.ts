@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import { asyncWrapper } from "../middlewares/asyncWrapper.js";
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/appError.js";
@@ -12,6 +12,7 @@ import { sendResponse } from "../utils/response.js";
 import { loginSchema, registerSchema } from "../schemas/user.schema.js";
 import type { AuthRequest } from "../middlewares/jwt.js";
 import { logger } from "../config/logger.js";
+import { redis } from "../config/redis.js";
 
 // Register controller
 export const register = asyncWrapper(
@@ -79,5 +80,30 @@ export const getMe = asyncWrapper(
     if (!user)
       return next(new AppError("User not found", 404, httpStatusText.FAIL));
     return sendResponse(res, 200, "User profile fetched", { user });
+  }
+);
+
+// Update continue reading
+export const updateContinueReading = asyncWrapper(
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    const { surahNumber, ayahNumber } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user?.id },
+      data: {
+        lastReadAyah: ayahNumber,
+        lastReadSurah: surahNumber,
+      },
+    });
+
+    const responseData = {
+      lastReadSurah: updatedUser.lastReadSurah,
+      lastReadAyah: updatedUser.lastReadAyah,
+    };
+
+    const cacheKey = `user:${req.user?.id}`;
+    await redis.set(cacheKey, JSON.stringify(updatedUser), "EX", 3600);
+
+    return sendResponse(res, 200, "Progress saved successfully", responseData);
   }
 );

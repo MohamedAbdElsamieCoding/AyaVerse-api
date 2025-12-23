@@ -4,6 +4,7 @@ import { AppError } from "../utils/appError.js";
 import { httpStatusText } from "../utils/httpStatusText.js";
 import { asyncWrapper } from "./asyncWrapper.js";
 import { prisma } from "../config/db.js";
+import { redis } from "../config/redis.js";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -25,6 +26,13 @@ export const protect = asyncWrapper(
       if (!decoded)
         return next(new AppError("Invalid Token", 401, httpStatusText.FAIL));
 
+      const cacheKey = `user:${decoded.id}`;
+      const cachedUser = await redis.get(cacheKey);
+      if (cachedUser) {
+        req.user = JSON.parse(cachedUser);
+        return next();
+      }
+
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },
       });
@@ -38,6 +46,8 @@ export const protect = asyncWrapper(
           )
         );
       }
+
+      await redis.set(cacheKey, JSON.stringify(user), "EX", 3600);
 
       req.user = user;
       next();
