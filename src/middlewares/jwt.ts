@@ -6,17 +6,8 @@ import { asyncWrapper } from "./asyncWrapper.js";
 import { prisma } from "../config/db.js";
 import { redis } from "../config/redis.js";
 
-export interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-    email?: string;
-    name?: string | null;
-  };
-}
-
 export const protect = asyncWrapper(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const authHeaders = req.headers.authorization;
     if (!authHeaders)
       return next(new AppError("Not authorized", 401, httpStatusText.ERROR));

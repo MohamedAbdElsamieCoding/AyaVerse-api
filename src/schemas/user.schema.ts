@@ -11,5 +11,13 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const updateContinueReadingSchema = z.object({
+  surahNumber: z.number().int().min(1).max(114),
+  ayahNumber: z.number().int().min(1),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type UpdateContinueReadingInput = z.infer<
+  typeof updateContinueReadingSchema
+>;

@@ -49,11 +49,11 @@ model Ayah {
   id           Int           @id @default(autoincrement())
   number       Int
   textArabic   String        @db.Text
-  textArabicSimple   String        @db.Text @default("")
+  textArabicSimple   String?        @db.Text @default("")
   juzNumber    Int
   pageNumber   Int
   surahId      Int
-  surah        Surah         @relation(fields: [surahId], references: [id])
+  surah        Surah         @relation(fields: [surahId], references: [id], onDelete: Cascade)
   translations Translation[]
   bookmark     Bookmark[]
 
@@ -61,6 +61,9 @@ model Ayah {
   updatedAt    DateTime      @updatedAt
 
   @@unique([surahId, number])
+  @@index([juzNumber])
+  @@index([pageNumber])
+  @@index([surahId, number])
   @@map("ayahs")
 }
 
@@ -75,6 +78,8 @@ model Translation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([ayahId])
+  @@index([language])
   @@map("translations")
 }
 
@@ -92,11 +97,13 @@ model Bookmark {
   userId String
   ayahId Int
 
-  user User @relation(fields: [userId] , references: [id])
-  ayah Ayah @relation(fields: [ayahId] , references: [id])
+  user User @relation(fields: [userId] , references: [id], onDelete: Cascade)
+  ayah Ayah @relation(fields: [ayahId] , references: [id], onDelete:  Cascade)
 
   createdAt DateTime @default(now())
 
   @@unique([userId , ayahId])
+  @@index([userId])
+  @@index([ayahId])
   @@map("bookmarks")
 }

@@ -1,14 +1,6 @@
 import type { Response } from "express";
 import { httpStatusText } from "./httpStatusText.js";
-
-export type ApiStatus = httpStatusText.SUCCESS | httpStatusText.ERROR;
-
-export interface ApiResponse<T> {
-  status: ApiStatus;
-  message: string;
-  data: T | null;
-  meta: any;
-}
+import { ApiResponse } from "../types/index.js";
 
 export const sendResponse = <T>(
   res: Response,

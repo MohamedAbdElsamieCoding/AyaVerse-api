@@ -1,5 +1,4 @@
-import type { Response, NextFunction } from "express";
-import type { AuthRequest } from "../middlewares/jwt.js";
+import type { Request, Response, NextFunction } from "express";
 import { asyncWrapper } from "../middlewares/asyncWrapper.js";
 import { AppError } from "../utils/appError.js";
 import { httpStatusText } from "../utils/httpStatusText.js";
@@ -7,7 +6,7 @@ import { prisma } from "../config/db.js";
 import { sendResponse } from "../utils/response.js";
 
 export const addBookmark = asyncWrapper(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { ayahId } = req.body;
     const userId = req.user?.id;
 
@@ -41,7 +40,7 @@ export const addBookmark = asyncWrapper(
 );
 
 export const getMyBookmarks = asyncWrapper(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
 
     if (!userId)
@@ -66,7 +65,7 @@ export const getMyBookmarks = asyncWrapper(
 );
 
 export const removeBookmark = asyncWrapper(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const userId = req.user?.id;
 

@@ -1,37 +1,25 @@
+// tsconfig.json - Make sure you have these settings
 {
   "compilerOptions": {
-    /* Language & Environment */
-    "target": "es2020",
-    "lib": ["ES2020"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-
-    /* Paths */
-    "rootDir": "./src",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
     "outDir": "./dist",
-
-    /* Strictness */
+    "rootDir": "./src",
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    "forceConsistentCasingInFileNames": true,
-
-    /* Interop & Imports */
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-
-    /* Emit */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
-    "removeComments": true,
-
-    /* Performance */
-    "skipLibCheck": true
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
-
-  "include": ["src/**/*.ts", "types/**/*.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

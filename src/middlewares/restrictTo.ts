@@ -1,10 +1,9 @@
-import type { Response, NextFunction } from "express";
-import type { AuthRequest } from "./jwt.js";
+import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/appError.js";
 import { httpStatusText } from "../utils/httpStatusText.js";
 
 export const restrictTo = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!roles.includes(req.user?.role as string)) {
       return next(
         new AppError(

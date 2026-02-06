@@ -1,4 +1,4 @@
-import type { Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { asyncWrapper } from "../middlewares/asyncWrapper.js";
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/appError.js";
@@ -9,10 +9,14 @@ import {
   hashedPassword,
 } from "../utils/auth.js";
 import { sendResponse } from "../utils/response.js";
-import { loginSchema, registerSchema } from "../schemas/user.schema.js";
-import type { AuthRequest } from "../middlewares/jwt.js";
+import {
+  loginSchema,
+  registerSchema,
+  updateContinueReadingSchema,
+} from "../schemas/user.schema.js";
 import { logger } from "../config/logger.js";
 import { redis } from "../config/redis.js";
+import { UserBasicInfo } from "../types/index.js";
 
 // Register controller
 export const register = asyncWrapper(
@@ -38,7 +42,11 @@ export const register = asyncWrapper(
     logger.info(`New user registered : ${email}`);
 
     return sendResponse(res, 201, "User registered successfully", {
-      user: { id: user.id, email: user.email, name: user.name },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      } as UserBasicInfo,
       token,
     });
   }
@@ -63,7 +71,11 @@ export const login = asyncWrapper(
 
     const token = generateToken(user.id);
     return sendResponse(res, 200, "Login successfully", {
-      user: { id: user.id, email: user.email, name: user.name },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      } as UserBasicInfo,
       token,
     });
   }
@@ -71,22 +83,44 @@ export const login = asyncWrapper(
 
 // Get current user profile
 export const getMe = asyncWrapper(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
+    const cacheKey = `user:${userId}`;
+
+    const cachedUser = await redis.get(cacheKey);
+    if (cachedUser) {
+      return sendResponse(res, 200, "User profile fetched (cached)", {
+        user: JSON.parse(cachedUser) as UserBasicInfo,
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true, role: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        lastReadSurah: true,
+        lastReadAyah: true,
+      },
     });
     if (!user)
       return next(new AppError("User not found", 404, httpStatusText.FAIL));
-    return sendResponse(res, 200, "User profile fetched", { user });
+
+    await redis.set(cacheKey, JSON.stringify(user), "EX", 3600);
+
+    return sendResponse(res, 200, "User profile fetched", {
+      user: user as UserBasicInfo,
+    });
   }
 );
 
 // Update continue reading
 export const updateContinueReading = asyncWrapper(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
-    const { surahNumber, ayahNumber } = req.body;
+  async (req: Request, res: Response) => {
+    const validatedData = updateContinueReadingSchema.parse(req.body);
+    const { surahNumber, ayahNumber } = validatedData;
 
     const updatedUser = await prisma.user.update({
       where: { id: req.user?.id },
@@ -94,16 +128,22 @@ export const updateContinueReading = asyncWrapper(
         lastReadAyah: ayahNumber,
         lastReadSurah: surahNumber,
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        lastReadSurah: true,
+        lastReadAyah: true,
+      },
     });
-
-    const responseData = {
-      lastReadSurah: updatedUser.lastReadSurah,
-      lastReadAyah: updatedUser.lastReadAyah,
-    };
 
     const cacheKey = `user:${req.user?.id}`;
     await redis.set(cacheKey, JSON.stringify(updatedUser), "EX", 3600);
 
-    return sendResponse(res, 200, "Progress saved successfully", responseData);
+    return sendResponse(res, 200, "Progress saved successfully", {
+      lastReadSurah: updatedUser.lastReadSurah,
+      lastReadAyah: updatedUser.lastReadAyah,
+    });
   }
 );
